@@ -71,7 +71,15 @@ public class PersonRepository implements Repository {
      */
     @Override
     public Person save(Person newPerson) {
-
+        if (newPerson.getId() != null) {
+            if (update(newPerson) == 1) {
+                return newPerson;
+            }else{
+                System.err.println("Could not update person");
+            }
+        }else{
+            return insert(newPerson);
+        }
         return null;
     }
 
