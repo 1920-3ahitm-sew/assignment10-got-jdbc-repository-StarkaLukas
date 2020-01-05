@@ -90,27 +90,23 @@ public class PersonRepository implements Repository {
      * @return Rückgabe der Person inklusive der neu generierten ID
      */
     private Person insert(Person personToSave) {
-        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
-            String sql = "INSERT INTO " + TABLE_NAME + " (NAME, CITY, HOUSE) VALUES (?, ?, ?)";
-            try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-                ;
-                preparedStatement.setString(1, personToSave.getName());
-                preparedStatement.setString(2, personToSave.getCity());
-                preparedStatement.setString(3, personToSave.getHouse());
+        String sql = "INSERT INTO " + TABLE_NAME + " (NAME, CITY, HOUSE) VALUES (?, ?, ?)";
 
-                int affectedRows = preparedStatement.executeUpdate();
+        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+             PreparedStatement preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            preparedStatement.setString(1, personToSave.getName());
+            preparedStatement.setString(2, personToSave.getCity());
+            preparedStatement.setString(3, personToSave.getHouse());
 
-                if (affectedRows == 0) {
-                    System.err.println("Creating person failed, no rows affected.");
-                }
+            int affectedRows = preparedStatement.executeUpdate();
 
-//                try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
-//                    if (generatedKeys.next()) {
-//                        personToSave.setId(generatedKeys.getLong(0));
-//                    } else {
-//                        System.err.println("Creating person failed, no ID obtained.");
-//                    }
-//                }
+            if (affectedRows == 0) {
+                System.err.println("Creating person failed, no rows affected.");
+            }
+
+            ResultSet resultSet = preparedStatement.getGeneratedKeys();
+            if (resultSet.next()) {
+                personToSave.setId(resultSet.getLong(1));
             }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
