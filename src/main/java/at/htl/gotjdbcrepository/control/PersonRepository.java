@@ -3,6 +3,7 @@ package at.htl.gotjdbcrepository.control;
 import at.htl.gotjdbcrepository.entity.Person;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -56,14 +57,13 @@ public class PersonRepository implements Repository {
     }
 
     /**
-     *
      * Hat newPerson eine ID (id != null) so in der Tabelle die entsprechende Person gesucht und upgedated
      * Hat newPerson keine ID wird ein neuer Datensatz eingefügt.
-     *
+     * <p>
      * Wie man die generierte ID zurück erhält: https://stackoverflow.com/a/1915197
-     *
+     * <p>
      * Falls ein Fehler auftritt, wird nur die Fehlermeldung ausgegeben, der Programmlauf nicht abgebrochen
-     *
+     * <p>
      * Verwenden sie hier die privaten MEthoden update() und insert()
      *
      * @param newPerson
@@ -74,17 +74,16 @@ public class PersonRepository implements Repository {
         if (newPerson.getId() != null) {
             if (update(newPerson) == 1) {
                 return newPerson;
-            }else{
+            } else {
                 System.err.println("Could not update person");
                 return insert(newPerson);
             }
-        }else{
+        } else {
             return insert(newPerson);
         }
     }
 
     /**
-     *
      * Wie man die generierte ID erhält: https://stackoverflow.com/a/1915197
      *
      * @param personToSave
@@ -93,7 +92,7 @@ public class PersonRepository implements Repository {
     private Person insert(Person personToSave) {
         try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
             String sql = "INSERT INTO " + TABLE_NAME + " (NAME, CITY, HOUSE) VALUES (?, ?, ?)";
-            try(PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
                 ;
                 preparedStatement.setString(1, personToSave.getName());
                 preparedStatement.setString(2, personToSave.getCity());
@@ -121,10 +120,9 @@ public class PersonRepository implements Repository {
     }
 
     /**
-     *
      * @param personToSave
      * @return wenn erfolgreich --> Anzahl der eingefügten Zeilen, also 1
-     *         wenn nicht erfolgreich --> -1
+     * wenn nicht erfolgreich --> -1
      */
     private int update(Person personToSave) {
         try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
@@ -139,7 +137,7 @@ public class PersonRepository implements Repository {
             if (affectedRows != 1) {
                 System.err.println("Updating person was not successful");
                 return -1;
-            }else{
+            } else {
                 return affectedRows;
             }
         } catch (SQLException e) {
@@ -161,7 +159,6 @@ public class PersonRepository implements Repository {
     }
 
     /**
-     *
      * Finden Sie eine Person anhand Ihrer ID
      *
      * @param id
@@ -187,13 +184,28 @@ public class PersonRepository implements Repository {
     }
 
     /**
-     *
      * @param house Name des Hauses
      * @return Liste aller Personen des gegebenen Hauses
      */
     public List<Person> findByHouse(String house) {
+        List<Person> people = new ArrayList<>();
+        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
+            String sql = "SELECT id, name, city, house FROM person where house=?";
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
 
-        return null;
+            preparedStatement.setString(1, house);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                Person person = new Person(resultSet.getString("name"), resultSet.getString("city"), resultSet.getString("house"));
+                person.setId(resultSet.getLong("id"));
+                people.add(person);
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+
+        return people;
     }
 
 
