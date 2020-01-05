@@ -45,7 +45,14 @@ public class PersonRepository implements Repository {
     }
 
     public void deleteAll() {
-
+        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
+            try (Statement stmt = conn.createStatement()) {
+                String sql = "DELETE FROM " + TABLE_NAME;
+                stmt.executeUpdate(sql);
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
     }
 
     /**
