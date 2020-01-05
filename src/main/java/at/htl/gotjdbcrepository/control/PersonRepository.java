@@ -22,6 +22,7 @@ public class PersonRepository implements Repository {
         if (instance == null) {
             instance = new PersonRepository();
         }
+        instance.createTable();
         return instance;
     }
 
