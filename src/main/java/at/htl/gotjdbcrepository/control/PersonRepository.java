@@ -150,7 +150,14 @@ public class PersonRepository implements Repository {
 
     @Override
     public void delete(long id) {
-
+        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
+            String sql = "DELETE FROM " + TABLE_NAME + " where id=?";
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.setLong(1, id);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
     }
 
     /**
