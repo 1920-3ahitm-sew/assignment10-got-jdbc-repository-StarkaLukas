@@ -1,7 +1,5 @@
 package at.htl.gotjdbcrepository.control;
-
 import at.htl.gotjdbcrepository.entity.Person;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
