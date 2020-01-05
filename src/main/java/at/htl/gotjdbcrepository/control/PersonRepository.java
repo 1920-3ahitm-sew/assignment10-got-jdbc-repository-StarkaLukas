@@ -168,7 +168,21 @@ public class PersonRepository implements Repository {
      * @return die gefundene Person oder wenn nicht gefunden wird null zurückgegeben
      */
     public Person find(long id) {
+        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
+            String sql = "SELECT id, name, city, house FROM " + TABLE_NAME + " where id=?";
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.setLong(1, id);
 
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    Person person = new Person(resultSet.getString("name"), resultSet.getString("city"), resultSet.getString("house"));
+                    person.setId(resultSet.getLong("id"));
+                    return person;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
         return null;
     }
 
