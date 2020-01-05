@@ -125,7 +125,24 @@ public class PersonRepository implements Repository {
      *         wenn nicht erfolgreich --> -1
      */
     private int update(Person personToSave) {
+        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
+            String sql = "UPDATE " + TABLE_NAME + " set name='?' city='?' house='?' where id = ?";
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.setString(1, personToSave.getName());
+            preparedStatement.setString(2, personToSave.getHouse());
+            preparedStatement.setString(3, personToSave.getCity());
+            preparedStatement.setLong(4, personToSave.getId());
 
+            int affectedRows = preparedStatement.executeUpdate();
+            if (affectedRows != 1) {
+                System.err.println("Updating person was not successful");
+                return -1;
+            }else{
+                return affectedRows;
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
         return -1;
     }
 
