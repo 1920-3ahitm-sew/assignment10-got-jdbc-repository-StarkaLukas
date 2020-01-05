@@ -104,13 +104,13 @@ public class PersonRepository implements Repository {
                 System.err.println("Creating person failed, no rows affected.");
             }
 
-            try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    personToSave.setId(generatedKeys.getLong(1));
-                }else{
-                    System.err.println("Creating person failed, no ID obtained.");
-                }
-            }
+//            try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
+//                if (generatedKeys.next()) {
+//                    personToSave.setId(generatedKeys.getLong(0));
+//                }else{
+//                    System.err.println("Creating person failed, no ID obtained.");
+//                }
+//            }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
@@ -126,7 +126,7 @@ public class PersonRepository implements Repository {
      */
     private int update(Person personToSave) {
         try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
-            String sql = "UPDATE " + TABLE_NAME + " set name='?' city='?' house='?' where id = ?";
+            String sql = "UPDATE " + TABLE_NAME + " set name=?, city=?, house=? where id = ?";
             PreparedStatement preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, personToSave.getName());
             preparedStatement.setString(2, personToSave.getHouse());
