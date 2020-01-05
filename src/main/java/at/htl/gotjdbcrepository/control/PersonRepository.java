@@ -91,8 +91,31 @@ public class PersonRepository implements Repository {
      * @return Rückgabe der Person inklusive der neu generierten ID
      */
     private Person insert(Person personToSave) {
+        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
+            String sql = "INSERT INTO " + TABLE_NAME + " (NAME, CITY, HOUSE) VALUES (?, ?, ?)";
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.setString(1, personToSave.getName());
+            preparedStatement.setString(2, personToSave.getCity());
+            preparedStatement.setString(3, personToSave.getHouse());
 
-        return null;
+            int affectedRows = preparedStatement.executeUpdate();
+
+            if (affectedRows == 0) {
+                System.err.println("Creating person failed, no rows affected.");
+            }
+
+            try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    personToSave.setId(generatedKeys.getLong(1));
+                }else{
+                    System.err.println("Creating person failed, no ID obtained.");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+
+        return personToSave;
     }
 
     /**
